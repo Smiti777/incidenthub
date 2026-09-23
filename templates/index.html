@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>IncidentHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>IncidentHub</h1>
+        <p>Service Incident Management Platform</p>
+    </div>
+
+    <h2>Dashboard</h2>
+
+    <div class="stats">
+
+        <div class="card">
+            <h3>Total Incidents</h3>
+            <p>{{ total }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Open</h3>
+            <p>{{ open_count }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Investigating</h3>
+            <p>{{ investigating }}</p>
+        </div>
+
+        <div class="card">
+            <h3>Resolved</h3>
+            <p>{{ resolved }}</p>
+        </div>
+
+    </div>
+
+    <h2>Recent Incidents</h2>
+
+    {% if incidents %}
+
+        {% for incident in incidents %}
+
+        <div class="incident">
+
+            <h3>{{ incident[1] }}</h3>
+
+            <p><strong>Service:</strong> {{ incident[2] }}</p>
+
+            <p><strong>Severity:</strong> {{ incident[3] }}</p>
+
+            <p><strong>Status:</strong> {{ incident[6] }}</p>
+
+            <p><strong>Assigned To:</strong>
+                {{ incident[5] if incident[5] else "Unassigned" }}
+            </p>
+
+            <p><strong>Description:</strong> {{ incident[4] }}</p>
+
+            <form method="POST" action="/update/{{ incident[0] }}">
+                <select name="status">
+
+    <option value="Open"
+    {% if incident[6] == "Open" %}selected{% endif %}>
+    Open
+    </option>
+
+    <option value="Investigating"
+    {% if incident[6] == "Investigating" %}selected{% endif %}>
+    Investigating
+    </option>
+
+    <option value="Resolved"
+    {% if incident[6] == "Resolved" %}selected{% endif %}>
+    Resolved
+    </option>
+
+</select>
+
+<input
+    type="text"
+    name="resolution"
+    placeholder="Resolution notes"
+    value="{{ incident[7] if incident[7] else '' }}"
+>
+
+<button type="submit">Update Incident</button>
+
+               
+
+                
+
+            </form>
+
+        </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <div class="incident">
+            <p>No incidents reported yet.</p>
+        </div>
+
+    {% endif %}
+
+    <br>
+
+    <a href="/create">+ Report New Incident</a>
+
+</div>
+
+</body>
+</html>
