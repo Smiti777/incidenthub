@@ -2,6 +2,10 @@
 
 Incident management platform built with Flask and SQLite.
 
+## Live Demo
+
+[IncidentHub Live Demo](https://incidenthub-5gmw.onrender.com)
+
 ## Features
 
 - Incident dashboard
