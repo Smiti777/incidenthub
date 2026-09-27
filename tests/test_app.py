@@ -2,7 +2,7 @@ import pytest
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from app import app # noqa: E402
+from app import app  # noqa: E402
 
 
 @pytest.fixture
@@ -35,4 +35,3 @@ def test_api(client):
     """Test API endpoint"""
     response = client.get("/api/incidents")
     assert response.status_code == 200
-    
