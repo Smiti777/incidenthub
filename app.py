@@ -114,7 +114,7 @@ def api_incidents():
         "SELECT id, title, service, severity, status FROM incidents ORDER BY id DESC"
     ).fetchall()
     conn.close()
-    
+
     return jsonify({
         "incidents": [
             {
