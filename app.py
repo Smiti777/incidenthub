@@ -1,10 +1,13 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, jsonify
 import sqlite3
+import os
 from database import init_db
 
 app = Flask(__name__)
-
 init_db()
+
+# GET COMMIT ID FROM RENDER (passed by deploy hook)
+COMMIT = os.getenv("RENDER_GIT_COMMIT", "local")[:7]
 
 
 @app.route("/")
@@ -39,13 +42,13 @@ def home():
         open_count=open_count,
         investigating=investigating,
         resolved=resolved,
-        incidents=incidents
+        incidents=incidents,
+        commit=COMMIT
     )
 
 
 @app.route("/create", methods=["GET", "POST"])
 def create_incident():
-
     if request.method == "POST":
         title = request.form["title"]
         service = request.form["service"]
@@ -74,6 +77,7 @@ def create_incident():
 
     return render_template("create_incident.html")
 
+
 @app.route("/update/<int:incident_id>", methods=["POST"])
 def update_incident(incident_id):
     status = request.form["status"]
@@ -94,19 +98,37 @@ def update_incident(incident_id):
     conn.close()
 
     return redirect("/")
-    status = request.form["status"]
 
+
+@app.route("/health")
+def health():
+    """Health check endpoint for CI/CD pipeline"""
+    return jsonify({"status": "ok", "commit": COMMIT})
+
+
+@app.route("/api/incidents")
+def api_incidents():
+    """JSON API endpoint returning incidents as JSON"""
     conn = sqlite3.connect("incidenthub.db")
-
-    conn.execute(
-        "UPDATE incidents SET status = ? WHERE id = ?",
-        (status, incident_id)
-    )
-
-    conn.commit()
+    incidents = conn.execute(
+        "SELECT id, title, service, severity, status FROM incidents ORDER BY id DESC"
+    ).fetchall()
     conn.close()
+    
+    return jsonify({
+        "incidents": [
+            {
+                "id": inc[0],
+                "title": inc[1],
+                "service": inc[2],
+                "severity": inc[3],
+                "status": inc[4]
+            }
+            for inc in incidents
+        ]
+    })
 
-    return redirect("/")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
